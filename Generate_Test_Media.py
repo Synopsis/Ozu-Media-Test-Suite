@@ -3,13 +3,21 @@ import subprocess
 import types
 
 
-def create_directory(output_folder_name:str)
+def file_name_and_ext_from_file_path(file_path:str) -> (str, str):
+
+    base_name = os.path.basename(file_path)
+    filename_without_extension, ext = os.path.splitext(base_name)
+    return (filename_without_extension, ext)
+
+def create_directory(output_folder_name:str) -> str:
 	cwd = os.getcwd()
 
 	output_folder = os.path.join(cwd, output_folder_name)
 
 	if not os.path.exists(output_folder):
 		os.makedirs(output_folder)
+
+	return output_folder
 
 def file_exists_in_directory(directory:str, filename:str) -> bool:
    
@@ -42,6 +50,8 @@ def generate_video_with_smpte_bars_and_timecode(width:int, height:int, frame_rat
 		'-pix_fmt', 'yuv420p',  # Pixel format for compatibility
 		'-fflags', '+shortest', # Stop encoding once the shortest stream ends
 		'-t', '5',
+		'-timecode', "01:00:00:00",
+		'-write_tmcd', 'true',
 		'-y',  # Overwrite output files without asking
 		output_file
 	]
@@ -54,11 +64,11 @@ def generate_video_with_smpte_bars_and_timecode(width:int, height:int, frame_rat
 
 def generate_all_source_files(output_folder_name:str = "source_media") -> list[str]:
 
-	create_directory(output_folder_name)
+	output_folder = create_directory(output_folder_name)
 
 	# Define a list of resolutions and frame rates
 	resolutions = [(320, 240), (640, 480), (1280, 720), (1920, 1080)]  # Resolutions: (width, height)
-	frame_rates = [24000/1001, 24, 25, 30000/1001, 30, 50, 60000/1001, 60]  # Frame rates: frames per second
+	frame_rates = [23.98, 24, 25, 29.97, 30, 50, 59.97, 60]  # Frame rates: frames per second
 
 	output_files = []
 
@@ -90,25 +100,35 @@ def modify_metadata(input_file:str, output_file:str, options:dict):
 
 
 
-let cases = [x for x in range(0, 5)]
+cases = list(range(0, 5))
 
 
-def generate_test_file(input_file:str, failure_type:int , output_file) -> str:
+def case1(input_file:str, output_dir:str) ->str:
+
+	file_name, ext = file_name_and_ext_from_file_path(input_file)
+
+	# output_file_name = 
+
+	# Test case 1: Incorrect container metadata
+	# 1a. Container marked as having a different frame rate than actual content.
+	subprocess.run(['ffmpeg', '-i', input_file, '-r', '30', 'incorrect_frame_rate.mp4'])
+
+
+def generate_test_file(input_file:str, failure_type:int, output_dir:str) -> str:
 	
-	def switch_case(case_number):
-    match case case_number:
-        case 1:
-            case1()
-        case 2:
-            case2()
-        case 3:
-            case3()
+
+	match failure_type:
+		case 1:
+			return case1()
+		case 2:
+			return case2()
+		case 3:
+			return case3()
 
 
-
-def generate_all_failure_files(all_source_files:list[str])
+def generate_all_failure_files(all_source_files:list[str]):
 	
-	create_directory("failure_files")
+	base_output_dir = create_directory("failure_files")
 
 
 	for source_file in all_source_files:
@@ -121,7 +141,7 @@ def generate_all_failure_files(all_source_files:list[str])
 all_source_files = generate_all_source_files()
 
 
-generate_all_failure_files(all_source_files)
+# generate_all_failure_files(all_source_files)
 
 
 
