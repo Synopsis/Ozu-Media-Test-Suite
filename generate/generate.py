@@ -64,6 +64,7 @@ def generate_all_source_files(output_folder_name:str = "source_media") -> list[s
 
 			if utils.file_exists_in_directory(output_folder, output_file ):
 				print( f"skipping {output_file_name}, ")
+				output_files.append(output_file)
 				continue
 
 			generate_video_with_smpte_bars_and_timecode(width, height, frame_rate, output_file)

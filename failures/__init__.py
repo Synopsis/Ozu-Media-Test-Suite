@@ -1,39 +1,44 @@
-cases = list(range(0, 5))
-
 from utils import utils
+from .metadata import *
 
 
-def case1(input_file:str, output_dir:str) ->str:
-
-	file_name, ext = utils.file_name_and_ext_from_file_path(input_file)
-
-	# output_file_name = 
-
-	# Test case 1: Incorrect container metadata
-	# 1a. Container marked as having a different frame rate than actual content.
-	subprocess.run(['ffmpeg', '-i', input_file, '-r', '30', 'incorrect_frame_rate.mp4'])
-
-
-def generate_test_file(input_file:str, failure_type:int, output_dir:str) -> str:
-	
-
-	match failure_type:
-		case 1:
-			return case1()
-		case 2:
-			return case2()
-		case 3:
-			return case3()
+failure_cases = [ 
+		{
+			"func_name" : "metadata.generate_mismatched_container_invalid_audio_codec",
+			"function" : metadata.generate_mismatched_container_invalid_audio_codec,
+			"prefix" : "metadata"
+		},
+	]
 
 
 def generate_all_failure_files(all_source_files:list[str]):
 	
+	print("Generating Failures")
+
 	base_output_dir = utils.create_directory("failure_files")
 
-
 	for source_file in all_source_files:
-		for case in cases:
-			generate_test_file(source_file, case)
+		print("Generating failure cases for", source_file)
+		for failure_case in failure_cases:
+
+			sub_dir = failure_case["prefix"]
+			func_name = failure_case["func_name"]
+
+			print("running", func_name)
+
+			input_file_name, ext = utils.file_name_and_ext_from_file_path(source_file)
+
+			output_folder = utils.create_directory( os.path.join(base_output_dir, sub_dir) )
+
+			output_file_name = func_name + "_" + input_file_name + "." + ext
+
+			output_file = os.path.join(output_folder, output_file_name)
+
+			if utils.file_exists_in_directory(output_folder, output_file ):
+				print( f"skipping {output_file_name}, ")
+				continue
+
+			failure_case["function"](source_file, output_file)
 
 
 
